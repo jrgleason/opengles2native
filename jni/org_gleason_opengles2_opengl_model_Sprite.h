@@ -15,6 +15,9 @@ extern "C" {
 JNIEXPORT void JNICALL Java_org_gleason_opengles2_opengl_model_Sprite_init
   (JNIEnv *, jclass);
 
+JNIEXPORT void JNICALL Java_org_gleason_opengles2_opengl_model_Sprite_eglinfo
+  (JNIEnv *, jclass);
+
 /*
  * Class:     org_gleason_opengles2_opengl_model_Sprite
  * Method:    resize

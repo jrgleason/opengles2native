@@ -16,6 +16,10 @@
         <activity
             android:name="org.gleason.opengles2.opengl.OpenGlActivity"
             android:label="@string/app_name" >
+        </activity>
+        <activity
+            android:name="org.gleason.opengles2.opengl.MainActivity"
+            android:label="@string/app_name" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 

@@ -3,14 +3,19 @@
 #include <EGL/egl.h>
 #include "org_gleason_opengles2_opengl_model_Sprite.h"
 
+#define LOG_TAG "Native"
+
+#include <android/log.h>
+#define LOGI(...) __android_log_print(ANDROID_LOG_INFO, LOG_TAG, __VA_ARGS__)
+#define LOGD(...) __android_log_print(ANDROID_LOG_DEBUG, LOG_TAG, __VA_ARGS__)
+#define LOGE(...) __android_log_print(ANDROID_LOG_ERROR, LOG_TAG, __VA_ARGS__)
+
 static GLint vertices[][3] = { { -0x10000, -0x10000, -0x10000 }, { 0x10000,
 		-0x10000, -0x10000 }, { 0x10000, 0x10000, -0x10000 }, { -0x10000,
 		0x10000, -0x10000 }, { -0x10000, -0x10000, 0x10000 }, { 0x10000,
 		-0x10000, 0x10000 }, { 0x10000, 0x10000, 0x10000 }, { -0x10000, 0x10000,
 		0x10000 } };
 
-GLubyte indices[] = { 0, 4, 5, 0, 5, 1, 1, 5, 6, 1, 6, 2, 2, 6, 7, 2, 7, 3, 3,
-		7, 4, 3, 4, 0, 4, 7, 6, 4, 6, 5, 3, 0, 1, 3, 1, 2 };
 
 GLbyte vShaderStr[] = "attribute vec4 vPosition;   \n"
 		"void main()                 \n"
@@ -88,6 +93,17 @@ void renderFrame() {
 	glDrawArrays(GL_TRIANGLES, 0, 3);
 }
 
+void getEGLInfo(){
+	EGLDisplay display;
+	EGLint major, minor;
+	display = eglGetDisplay(EGL_DEFAULT_DISPLAY);
+	eglInitialize(display, &major, &minor);
+	LOGD("Major is: %d. Minor is: %d\n", major, minor );
+}
+JNIEXPORT void JNICALL Java_org_gleason_opengles2_opengl_model_Sprite_eglinfo(JNIEnv* env, jclass class)
+{
+	getEGLInfo();
+}
 JNIEXPORT void JNICALL Java_org_gleason_opengles2_opengl_model_Sprite_init(JNIEnv* env, jclass class)
 {
 	InitializeOpenGL();

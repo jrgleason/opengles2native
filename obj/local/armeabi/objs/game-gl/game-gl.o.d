@@ -10,7 +10,8 @@ obj/local/armeabi/objs/game-gl/game-gl.o: jni/game-gl.c \
  /Users/jackiegleason/Development/Android/android-ndk-r8c/platforms/android-14/arch-arm/usr/include/EGL/eglplatform.h \
  /Users/jackiegleason/Development/Android/android-ndk-r8c/platforms/android-14/arch-arm/usr/include/android/native_window.h \
  /Users/jackiegleason/Development/Android/android-ndk-r8c/platforms/android-14/arch-arm/usr/include/android/rect.h \
- jni/org_gleason_opengles2_opengl_model_Sprite.h
+ jni/org_gleason_opengles2_opengl_model_Sprite.h \
+ /Users/jackiegleason/Development/Android/android-ndk-r8c/platforms/android-14/arch-arm/usr/include/android/log.h
 
 /Users/jackiegleason/Development/Android/android-ndk-r8c/platforms/android-14/arch-arm/usr/include/jni.h:
 
@@ -35,3 +36,5 @@ obj/local/armeabi/objs/game-gl/game-gl.o: jni/game-gl.c \
 /Users/jackiegleason/Development/Android/android-ndk-r8c/platforms/android-14/arch-arm/usr/include/android/rect.h:
 
 jni/org_gleason_opengles2_opengl_model_Sprite.h:
+
+/Users/jackiegleason/Development/Android/android-ndk-r8c/platforms/android-14/arch-arm/usr/include/android/log.h:
