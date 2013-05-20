@@ -5,6 +5,15 @@
     tools:context=".OpenGlActivity" >
 
     <Button
+        android:id="@+id/button2"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/button1"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="44dp"
+        android:text="EGL Example" />
+    
+    <Button
         android:id="@+id/button1"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -13,12 +22,11 @@
         android:text="OpenGL Triangle" />
 
     <Button
-        android:id="@+id/button2"
+        android:id="@+id/button3"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_below="@+id/button1"
-        android:layout_centerHorizontal="true"
         android:layout_marginTop="22dp"
-        android:text="EGL Example" />
+        android:layout_centerHorizontal="true"
+        android:text="OpenGL Lines" />
 
 </RelativeLayout>

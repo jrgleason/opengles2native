@@ -34,6 +34,11 @@ JNIEXPORT void JNICALL Java_org_gleason_opengles2_opengl_model_Sprite_resize
 JNIEXPORT void JNICALL Java_org_gleason_opengles2_opengl_model_Sprite_render
   (JNIEnv *, jclass);
 
+JNIEXPORT void JNICALL Java_org_gleason_opengles2_opengl_model_Sprite_renderline
+  (JNIEnv *, jclass);
+JNIEXPORT void JNICALL Java_org_gleason_opengles2_opengl_model_Sprite_loop
+  (JNIEnv *, jclass);
+
 #ifdef __cplusplus
 }
 #endif
