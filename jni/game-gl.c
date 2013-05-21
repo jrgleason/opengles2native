@@ -189,6 +189,7 @@ static int width;
 static int height;
 static float xLocation = -2;
 static float yLocation = -2;
+static float zLocation = -1;
 
 void drawCircle() {
 	glClear(GL_COLOR_BUFFER_BIT);
@@ -197,7 +198,7 @@ void drawCircle() {
 	//int totalVertices = 360 * 12;
 	int totalVertices = 360 * 4;
 	const float radsPerLine = (180.f / totalVertices) * DEG2RAD;
-	float lineVertices[(totalVertices * 4)];
+	float lineVertices[(totalVertices * 6)];
 	int i;
 	int ii = 0;
 	float rad = 0.5f;
@@ -212,10 +213,14 @@ void drawCircle() {
 	} else {
 		yLocation = yLocation + 0.01f;
 	}
+	if (zLocation > 1) {
+		zLocation = -1;
+	} else {
+		zLocation = zLocation + 0.01f;
+		LOGD("%.1f", zLocation);
+	}
 	float xCorrect = height / ((float) width);
-	LOGD("%d / %d = %.1f", height, width, xCorrect);
 	float yCorrect = 1; //width/((float)height);
-	LOGD("%d / %d = %.1f", width, height, yCorrect);
 
 	for (i = 0; i < (totalVertices); i++) {
 
@@ -223,17 +228,20 @@ void drawCircle() {
 		float cosine = cos(degInRad);
 		float sine = sin(degInRad);
 		GLfloat x1 = (-1 * (cosine * (rad * xCorrect))) + xLocation;
-		GLfloat y1 = (-1 * (sine * (rad * yCorrect)))+yLocation;
+		GLfloat y1 = (-1 * (sine * (rad * yCorrect))) + yLocation;
+		GLfloat z1 = zLocation;
 		GLfloat x2 = (cosine * (rad * xCorrect)) + xLocation;
-		GLfloat y2 = (sine * (rad * yCorrect))+yLocation;
+		GLfloat y2 = (sine * (rad * yCorrect)) + yLocation;
+		GLfloat z2 = zLocation;
 		lineVertices[ii++] = x1;
 		lineVertices[ii++] = y1;
+		lineVertices[ii++] = z1;
 		lineVertices[ii++] = x2;
 		lineVertices[ii++] = y2;
+		lineVertices[ii++] = z2;
 	}
 	int size = sizeof(lineVertices) / sizeof(lineVertices[0]);
-	LOGD("Size of array is: %d", size);
-	glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 0, lineVertices);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, lineVertices);
 	glEnableVertexAttribArray(0);
 	glDrawArrays(GL_LINES, 0, totalVertices * 2);
 }
