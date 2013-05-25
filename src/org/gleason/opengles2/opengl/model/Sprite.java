@@ -14,4 +14,7 @@ public class Sprite {
 	public static native void renderline();
 	public static native void eglinfo();
 	public static native void loop();
+	public static native void rendercircle();
+//	public static native void setLocationWidth(int w, int tw);
+	public static native void setMove(float x);
 }

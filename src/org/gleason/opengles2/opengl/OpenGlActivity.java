@@ -2,6 +2,7 @@ package org.gleason.opengles2.opengl;
 
 
 import org.gleason.opengles2.opengl.model.Sprite;
+import org.gleason.opengles2.opengl.renderer.GameRenderer;
 
 import android.opengl.GLSurfaceView;
 import android.os.Bundle;

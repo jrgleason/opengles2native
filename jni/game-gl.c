@@ -187,9 +187,9 @@ void renderMovingFrame() {
 
 static int width;
 static int height;
-static float xLocation = -2;
-static float yLocation = -2;
-static float zLocation = -1;
+static float xLocation = 0;
+static float yLocation = 0;
+static float zLocation = 0;
 
 void drawCircle() {
 	glClear(GL_COLOR_BUFFER_BIT);
@@ -202,36 +202,36 @@ void drawCircle() {
 	int i;
 	int ii = 0;
 	float rad = 0.5f;
-	float centerX = width;
-	if (xLocation > 2) {
-		xLocation = -2;
-	} else {
-		xLocation = xLocation + 0.01f;
-	}
-	if (yLocation > 2) {
-		yLocation = -2;
-	} else {
-		yLocation = yLocation + 0.01f;
-	}
-	if (zLocation > 1) {
-		zLocation = -1;
-	} else {
-		zLocation = zLocation + 0.01f;
-		LOGD("%.1f", zLocation);
-	}
+//	float centerX = width;
+//	if (xLocation > 2) {
+//		xLocation = -2;
+//	} else {
+//		xLocation = xLocation + 0.01f;
+//	}
+//	if (yLocation > 2) {
+//		yLocation = -2;
+//	} else {
+//		yLocation = yLocation + 0.01f;
+//	}
+//	if (zLocation > 1) {
+//		zLocation = -1;
+//	} else {
+//		zLocation = zLocation + 0.01f;
+//		LOGD("%.1f", zLocation);
+//	}
 	float xCorrect = height / ((float) width);
-	float yCorrect = 1; //width/((float)height);
+	float yCorrect = width/((float)height);
 
 	for (i = 0; i < (totalVertices); i++) {
 
 		float degInRad = radsPerLine * i;
 		float cosine = cos(degInRad);
 		float sine = sin(degInRad);
-		GLfloat x1 = (-1 * (cosine * (rad * xCorrect))) + xLocation;
+		GLfloat x1 = (-1 * (cosine * (rad))) + xLocation;
 		GLfloat y1 = (-1 * (sine * (rad * yCorrect))) + yLocation;
 		GLfloat z1 = zLocation;
-		GLfloat x2 = (cosine * (rad * xCorrect)) + xLocation;
-		GLfloat y2 = (sine * (rad * yCorrect)) + yLocation;
+		GLfloat x2 = (cosine * (rad)) + xLocation;
+		GLfloat y2 = (sine * (rad*yCorrect)) + yLocation;
 		GLfloat z2 = zLocation;
 		lineVertices[ii++] = x1;
 		lineVertices[ii++] = y1;
@@ -240,7 +240,7 @@ void drawCircle() {
 		lineVertices[ii++] = y2;
 		lineVertices[ii++] = z2;
 	}
-	int size = sizeof(lineVertices) / sizeof(lineVertices[0]);
+//	int size = sizeof(lineVertices) / sizeof(lineVertices[0]);
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, lineVertices);
 	glEnableVertexAttribArray(0);
 	glDrawArrays(GL_LINES, 0, totalVertices * 2);
@@ -268,15 +268,120 @@ void drawStuff(int width, int height, int centerX, int centerY) {
 
 int stop = 0;
 
+// android window, supported by NDK r5 and newer
+ANativeWindow* _window;
+
+EGLDisplay _display;
+EGLSurface _surface;
+EGLContext _context;
+int _width;
+int _height;
+GLfloat _angle;
+
+static int nativeInit(void) {
+	const EGLint attribs[] = { EGL_SURFACE_TYPE, EGL_WINDOW_BIT, EGL_BLUE_SIZE,
+			8, EGL_GREEN_SIZE, 8, EGL_RED_SIZE, 8, EGL_NONE };
+	EGLDisplay display;
+	EGLConfig config;
+	EGLint numConfigs;
+	EGLint format;
+	EGLSurface surface;
+	EGLContext context;
+	EGLint width;
+	EGLint height;
+	GLfloat ratio;
+	LOG_INFO("Initializing context");
+
+	if ((display = eglGetDisplay(EGL_DEFAULT_DISPLAY)) == EGL_NO_DISPLAY) {
+		LOGE("eglGetDisplay() returned error %d", eglGetError());
+		return 0;
+	}
+	if (!eglInitialize(display, 0, 0)) {
+		LOGE("eglInitialize() returned error %d", eglGetError());
+		return 0;
+	}
+
+	if (!eglChooseConfig(display, attribs, &config, 1, &numConfigs)) {
+		LOGE("eglChooseConfig() returned error %d", eglGetError());
+		destroy();
+		return 0;
+	}
+
+	if (!eglGetConfigAttrib(display, config, EGL_NATIVE_VISUAL_ID, &format)) {
+		LOGE("eglGetConfigAttrib() returned error %d", eglGetError());
+		destroy();
+		return 0;
+	}
+	ANativeWindow_setBuffersGeometry(_window, 0, 0, format);
+
+	if (!(surface = eglCreateWindowSurface(display, config, _window, 0))) {
+		LOG_ERROR("eglCreateWindowSurface() returned error %d", eglGetError());
+		destroy();
+		return 0;
+	}
+
+	if (!(context = eglCreateContext(display, config, 0, 0))) {
+		LOG_ERROR("eglCreateContext() returned error %d", eglGetError());
+		destroy();
+		return 0;
+	}
+
+	if (!eglMakeCurrent(display, surface, surface, context)) {
+		LOG_ERROR("eglMakeCurrent() returned error %d", eglGetError());
+		destroy();
+		return 0;
+	}
+
+	if (!eglQuerySurface(display, surface, EGL_WIDTH, &width)
+			|| !eglQuerySurface(display, surface, EGL_HEIGHT, &height)) {
+		LOG_ERROR("eglQuerySurface() returned error %d", eglGetError());
+		destroy();
+		return 0;
+	}
+
+	_display = display;
+	_surface = surface;
+	_context = context;
+	_width = width;
+	_height = height;
+
+	glDisable(GL_DITHER);
+	glHint(GL_GENERATE_MIPMAP_HINT, GL_FASTEST);
+	glClearColor(0, 0, 0, 0);
+	glEnable(GL_CULL_FACE);
+	//glShadeModel(GL_SMOOTH);
+	glEnable(GL_DEPTH_TEST);
+
+	glViewport(0, 0, width, height);
+
+	ratio = (GLfloat) width / height;
+	//glMatrixMode(GL_PROJECTION);
+	glLoadIdentity();
+	glFrustumf(-ratio, ratio, -1, 1, 1, 10);
+	return 1;
+}
+
+static void moveLeft(float x){
+	while(xLocation > x){
+		xLocation = xLocation - 0.01f;
+	}
+}
+
+static void moveRight(float x){
+	while(xLocation < x){
+		xLocation = xLocation + 0.01f;
+	}
+}
+
 static void loop(void) {
 
 	for (;;) {
 
-		if (centerX >= 1) {
-			centerX = -1;
-		} else {
-			centerX = centerX + .1;
-		}
+//		if (centerX >= 1) {
+//			centerX = -1;
+//		} else {
+//			centerX = centerX + .1;
+//		}
 		// LOGD("Incremented... %d", centerX );
 		if (stop == 1) {
 			break;
@@ -307,15 +412,34 @@ width=w;
 }
 JNIEXPORT void JNICALL Java_org_gleason_opengles2_opengl_model_Sprite_render(JNIEnv* env, jclass class)
 {
-//renderFrame();
-drawCircle();
+  renderFrame();
 }
 JNIEXPORT void JNICALL Java_org_gleason_opengles2_opengl_model_Sprite_renderline(JNIEnv* env, jclass class)
 {
 renderFrameLine();
 }
+JNIEXPORT void JNICALL Java_org_gleason_opengles2_opengl_model_Sprite_rendercircle(JNIEnv* env, jclass class)
+{
+  drawCircle();
+}
+
 JNIEXPORT void JNICALL Java_org_gleason_opengles2_opengl_model_Sprite_loop(JNIEnv* env, jclass class)
 {
 loop();
 }
 
+JNIEXPORT void JNICALL Java_org_gleason_opengles2_opengl_model_Sprite_setLocationWidth(JNIEnv* env, jclass class, jint w, jint tw)
+{
+width=w;
+}
+
+JNIEXPORT void JNICALL Java_org_gleason_opengles2_opengl_model_Sprite_setMove(JNIEnv* env, jclass class, jfloat x)
+{
+  //moveRight(x);
+xLocation = x;
+}
+
+JNIEXPORT void JNICALL Java_org_gleason_opengles2_opengl_model_Sprite_setMoveLeft(JNIEnv* env, jclass class, jint x)
+{
+  //moveLeft(x);
+}
