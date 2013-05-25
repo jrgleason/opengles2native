@@ -15,12 +15,13 @@ import android.app.Activity;
 import android.graphics.Point;
 import android.util.Log;
 import android.view.Display;
+import android.view.DragEvent;
 import android.view.Menu;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.Toast;
 
-public class OpenGlCircleActivity extends Activity implements View.OnTouchListener {
+public class OpenGlCircleActivity extends Activity implements View.OnTouchListener, View.OnDragListener {
 	Thread mGameThread;
 	private GLSurfaceView view;
 	GLSurfaceView.Renderer render;
@@ -34,7 +35,6 @@ public class OpenGlCircleActivity extends Activity implements View.OnTouchListen
     	Sprite.setHeight(size.y);
     	Sprite.setWidth(size.x);
 	    view = new GLSurfaceView(this);
-	    
 	    view.setOnTouchListener(this);
 	    // Tell EGL to use a ES 2.0 Context
 	    view.setEGLContextClientVersion(2);
@@ -43,6 +43,10 @@ public class OpenGlCircleActivity extends Activity implements View.OnTouchListen
 	    // Set the renderer
 	    render = new CircleRenderer();
 	    view.setRenderer(render);
+	    
+	    Log.d("Debug", "Trying to set ortho");
+	    Sprite.setCords(size.y, size.x);
+	    Log.d("Debug", "Done set ortho");
 
 	    setContentView(view);
 	    Thread mGameThread = new Thread(new Runnable() {
@@ -65,16 +69,25 @@ public class OpenGlCircleActivity extends Activity implements View.OnTouchListen
 	
 	@Override
 	public boolean onTouch(View view, MotionEvent event) {
-		// TODO Auto-generated method stub
-		float move = (event.getX()-size.x)/size.x;
-		Log.d("Test", Float.toString(move));
-		Sprite.setMove(move);
-		if(currentTouchX > event.getX()){
-			Toast.makeText(this, "Right Swipe", Toast.LENGTH_SHORT);
-		}
-		else if (currentTouchX < event.getX()){
-			Toast.makeText(this, "Left Swipe", Toast.LENGTH_SHORT);
-		}
-		return false;
+		moveCircle(event.getX(), event.getY());
+		return true;
+	}
+	
+	private void moveCircle(float x, float y){
+//		float moveX = ((x)-(size.x/2))/(size.x/2);
+//		Log.d("Debug", "Y "+ y);
+//		Log.d("Debug", "Height "+ size.y);
+//		float moveY = ((size.y/2)-(y))/(size.y/2);
+//		Log.d("Debug", "MoveY "+ moveY);
+//		Sprite.setMoveX(moveX);
+//		Sprite.setMoveY(moveY);
+		Sprite.setMoveX(x);
+		Sprite.setMoveY(y);
+	}
+
+	@Override
+	public boolean onDrag(View v, DragEvent event) {
+		moveCircle(event.getX(),event.getY());
+		return true;
 	}
 }

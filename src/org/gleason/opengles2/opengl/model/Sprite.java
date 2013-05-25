@@ -16,5 +16,7 @@ public class Sprite {
 	public static native void loop();
 	public static native void rendercircle();
 //	public static native void setLocationWidth(int w, int tw);
-	public static native void setMove(float x);
+	public static native void setMoveX(float x);
+	public static native void setMoveY(float y);
+	public static native void setCords(float y, float x);
 }

@@ -18,9 +18,10 @@ static GLint vertices[][3] = { { -0x10000, -0x10000, -0x10000 }, { 0x10000,
 		0x10000 } };
 
 GLbyte vShaderStr[] = "attribute vec4 vPosition;   \n"
+		"uniform mat4 Projection;   \n"
 		"void main()                 \n"
 		"{                           \n"
-		"   gl_Position = vPosition; \n"
+		"   gl_Position = Projection * vPosition; \n"
 		"}                           \n";
 
 GLbyte fShaderStr[] = "precision mediump float;                   \n"
@@ -30,6 +31,9 @@ GLbyte fShaderStr[] = "precision mediump float;                   \n"
 		"}                                          \n";
 
 GLuint programObject;
+
+float widthScreen;
+float heightScreen;
 
 GLuint LoadShader(GLenum type, const char *shaderSrc) {
 	GLuint shader;
@@ -59,7 +63,31 @@ GLuint LoadShader(GLenum type, const char *shaderSrc) {
 
 }
 
+void glOrthof(float left, float right, float bottom, float top, float near, float far){
+	        LOGD("In glOrtho");
+	        float a = 2.0f / (right - left);
+	        float b = 2.0f / (top - bottom);
+	        float c = -2.0f / (far - near);
+
+	        float tx = - (right + left)/(right - left);
+	        float ty = - (top + bottom)/(top - bottom);
+	        float tz = - (far + near)/(far - near);
+
+	        float ortho[16] = {
+	            a, 0, 0, 0,
+	            0, b, 0, 0,
+	            0, 0, c, 0,
+	            tx, ty, tz, 1
+	        };
+
+
+	        GLint projectionUniform = glGetUniformLocation(programObject, "Projection");
+	        glUniformMatrix4fv(projectionUniform, 1, 0, &ortho[0]);
+	        LOGD("In finished glOrtho");
+}
+
 void InitializeOpenGL() {
+	LOGD("Initialization Started");
 	GLuint vertexShader;
 	GLuint fragmentShader;
 	vertexShader = LoadShader(GL_VERTEX_SHADER, vShaderStr);
@@ -71,7 +99,9 @@ void InitializeOpenGL() {
 	glBindAttribLocation(programObject, 0, "vPosition");
 	glLinkProgram(programObject);
 	glUseProgram(programObject);
+	glOrthof(0, widthScreen, heightScreen, 0, 2.0, -2.0);
 	glClearColor(1.0f, 1.0f, 0.0f, 1.0f);
+	LOGD("Initialization Complete");
 }
 void resizeViewport(int newWidth, int newHeight) {
 	glViewport(0, 0, newWidth, newHeight);
@@ -195,32 +225,15 @@ void drawCircle() {
 	glClear(GL_COLOR_BUFFER_BIT);
 	glUseProgram(programObject);
 	const float DEG2RAD = 3.14159f / 180.0f;
-	//int totalVertices = 360 * 12;
 	int totalVertices = 360 * 4;
 	const float radsPerLine = (180.f / totalVertices) * DEG2RAD;
 	float lineVertices[(totalVertices * 6)];
 	int i;
 	int ii = 0;
-	float rad = 0.5f;
-//	float centerX = width;
-//	if (xLocation > 2) {
-//		xLocation = -2;
-//	} else {
-//		xLocation = xLocation + 0.01f;
-//	}
-//	if (yLocation > 2) {
-//		yLocation = -2;
-//	} else {
-//		yLocation = yLocation + 0.01f;
-//	}
-//	if (zLocation > 1) {
-//		zLocation = -1;
-//	} else {
-//		zLocation = zLocation + 0.01f;
-//		LOGD("%.1f", zLocation);
-//	}
+//	float rad = 0.5f;
+	float rad = 100.0f;
 	float xCorrect = height / ((float) width);
-	float yCorrect = width/((float)height);
+	float yCorrect = 1; //width/((float)height);
 
 	for (i = 0; i < (totalVertices); i++) {
 
@@ -233,6 +246,7 @@ void drawCircle() {
 		GLfloat x2 = (cosine * (rad)) + xLocation;
 		GLfloat y2 = (sine * (rad*yCorrect)) + yLocation;
 		GLfloat z2 = zLocation;
+//		LOGD("Creating circle with values %.01f %.01f %.01f %.01f %.01f %.01f", x1, y1, z1, x2, y2, z2);
 		lineVertices[ii++] = x1;
 		lineVertices[ii++] = y1;
 		lineVertices[ii++] = z1;
@@ -240,7 +254,6 @@ void drawCircle() {
 		lineVertices[ii++] = y2;
 		lineVertices[ii++] = z2;
 	}
-//	int size = sizeof(lineVertices) / sizeof(lineVertices[0]);
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, lineVertices);
 	glEnableVertexAttribArray(0);
 	glDrawArrays(GL_LINES, 0, totalVertices * 2);
@@ -355,7 +368,6 @@ static int nativeInit(void) {
 	glViewport(0, 0, width, height);
 
 	ratio = (GLfloat) width / height;
-	//glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
 	glFrustumf(-ratio, ratio, -1, 1, 1, 10);
 	return 1;
@@ -433,13 +445,23 @@ JNIEXPORT void JNICALL Java_org_gleason_opengles2_opengl_model_Sprite_setLocatio
 width=w;
 }
 
-JNIEXPORT void JNICALL Java_org_gleason_opengles2_opengl_model_Sprite_setMove(JNIEnv* env, jclass class, jfloat x)
+JNIEXPORT void JNICALL Java_org_gleason_opengles2_opengl_model_Sprite_setMoveX(JNIEnv* env, jclass class, jfloat x)
 {
   //moveRight(x);
-xLocation = x;
+  xLocation = x;
 }
 
-JNIEXPORT void JNICALL Java_org_gleason_opengles2_opengl_model_Sprite_setMoveLeft(JNIEnv* env, jclass class, jint x)
+JNIEXPORT void JNICALL Java_org_gleason_opengles2_opengl_model_Sprite_setMoveY(JNIEnv* env, jclass class, jfloat y)
 {
-  //moveLeft(x);
+  //moveRight(x);
+  yLocation = y;
 }
+
+JNIEXPORT void JNICALL Java_org_gleason_opengles2_opengl_model_Sprite_setCords(JNIEnv* env, jclass class, jfloat y, jfloat x)
+{
+	widthScreen = x;
+	heightScreen = y;
+//	glOrthof(0, x, y, 0, 2.0, -2.0);
+}
+
+
