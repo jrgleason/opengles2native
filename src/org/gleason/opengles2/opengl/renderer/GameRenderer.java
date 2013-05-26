@@ -23,7 +23,7 @@ public class GameRenderer implements GLSurfaceView.Renderer {
 	@Override
 	public void onSurfaceCreated(GL10 arg0, EGLConfig arg1) {
 		// TODO Auto-generated method stub
-		Sprite.init();
+		Sprite.init(0);
 	}
 
 }

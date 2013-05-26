@@ -6,7 +6,7 @@ public class Sprite {
 		System.loadLibrary("game-gl");
 	}
 
-	public static native void init();
+	public static native void init(int resize);
 	public static native void resize(int width, int height);
 	public static native void setWidth(int width);
 	public static native void setHeight(int height);
@@ -19,4 +19,5 @@ public class Sprite {
 	public static native void setMoveX(float x);
 	public static native void setMoveY(float y);
 	public static native void setCords(float y, float x);
+	public static native void toggleColor();
 }

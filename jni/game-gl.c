@@ -2,7 +2,6 @@
 #include <GLES2/gl2.h>
 #include <EGL/egl.h>
 #include <math.h>
-#include "org_gleason_opengles2_opengl_model_Sprite.h"
 
 #define LOG_TAG "Native"
 
@@ -11,24 +10,33 @@
 #define LOGD(...) __android_log_print(ANDROID_LOG_DEBUG, LOG_TAG, __VA_ARGS__)
 #define LOGE(...) __android_log_print(ANDROID_LOG_ERROR, LOG_TAG, __VA_ARGS__)
 
-static GLint vertices[][3] = { { -0x10000, -0x10000, -0x10000 }, { 0x10000,
-		-0x10000, -0x10000 }, { 0x10000, 0x10000, -0x10000 }, { -0x10000,
-		0x10000, -0x10000 }, { -0x10000, -0x10000, 0x10000 }, { 0x10000,
-		-0x10000, 0x10000 }, { 0x10000, 0x10000, 0x10000 }, { -0x10000, 0x10000,
-		0x10000 } };
+//static GLint vertices[][3] = { { -0x10000, -0x10000, -0x10000 }, { 0x10000,
+//		-0x10000, -0x10000 }, { 0x10000, 0x10000, -0x10000 }, { -0x10000,
+//		0x10000, -0x10000 }, { -0x10000, -0x10000, 0x10000 }, { 0x10000,
+//		-0x10000, 0x10000 }, { 0x10000, 0x10000, 0x10000 }, { -0x10000, 0x10000,
+//		0x10000 } };
 
-GLbyte vShaderStr[] = "attribute vec4 vPosition;   \n"
+GLbyte vShaderStr[] =
+		"attribute vec4 vPosition;   \n"
 		"uniform mat4 Projection;   \n"
+		"uniform vec4 color;   \n"
+		"uniform int project;  \n"
 		"void main()                 \n"
 		"{                           \n"
-		"   gl_Position = Projection * vPosition; \n"
+		"   if(project == 0){ \n"
+		"     gl_Position = vPosition; \n"
+		"   } \n"
+		"   else{ \n"
+		"     gl_Position = Projection * vPosition; \n"
+        "   } \n"
 		"}                           \n";
 
-GLbyte fShaderStr[] = "precision mediump float;                   \n"
-		"void main()                                \n"
-		"{                                          \n"
-		"  gl_FragColor = vec4(1.0, 0.0, 0.0, 1.0); \n"
-		"}                                          \n";
+GLbyte fShaderStr[] = "precision mediump float;"
+	"uniform vec4 color;   \n"
+    "void main()                                \n"
+    "{                                          \n"
+    "  gl_FragColor = color; \n"
+    "}                                          \n";
 
 GLuint programObject;
 
@@ -80,13 +88,14 @@ void glOrthof(float left, float right, float bottom, float top, float near, floa
 	            tx, ty, tz, 1
 	        };
 
-
+	        GLint loc1= glGetUniformLocation(programObject, "project");
+	        glUniform1i(loc1, 1.0f);
 	        GLint projectionUniform = glGetUniformLocation(programObject, "Projection");
 	        glUniformMatrix4fv(projectionUniform, 1, 0, &ortho[0]);
 	        LOGD("In finished glOrtho");
 }
 
-void InitializeOpenGL() {
+void InitializeOpenGL(int i) {
 	LOGD("Initialization Started");
 	GLuint vertexShader;
 	GLuint fragmentShader;
@@ -99,7 +108,9 @@ void InitializeOpenGL() {
 	glBindAttribLocation(programObject, 0, "vPosition");
 	glLinkProgram(programObject);
 	glUseProgram(programObject);
-	glOrthof(0, widthScreen, heightScreen, 0, 2.0, -2.0);
+	if(i == 1){
+		glOrthof(0, widthScreen, heightScreen, 0, 2.0, -2.0);
+	}
 	glClearColor(1.0f, 1.0f, 0.0f, 1.0f);
 	LOGD("Initialization Complete");
 }
@@ -107,14 +118,30 @@ void resizeViewport(int newWidth, int newHeight) {
 	glViewport(0, 0, newWidth, newHeight);
 }
 
+static float currentZ = 1.0f;
+
+void initColor(){
+	GLint location = glGetUniformLocation(programObject, "color");
+	glUniform4f(location,1.0f,0.0f,currentZ,1.0f);
+}
+
+void toggleColor(){
+	if(currentZ == 1.0f){
+		currentZ = 0.0f;
+	}
+	else{
+		currentZ = 1.0f;
+	}
+}
+
 void renderFrameLine() {
-	GLfloat vVertices[] = { 0.0f, 0.8f, 0.0f, -0.8f, -0.8f, 0.0f, 0.8f, 0.0f };
+	GLfloat vVertices[] = { 0.0f, 400.0f, 0.0f, -400.0f, -400.0f, 0.0f, 400.0f, 0.0f };
 	// Clear the color buffer
 	glClear(GL_COLOR_BUFFER_BIT);
 	// Use the program object
 	glUseProgram(programObject);
-
 	glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 0, vVertices);
+	initColor();
 	glEnableVertexAttribArray(0);
 	glDrawArrays(GL_LINES, 0, 4);
 }
@@ -137,13 +164,15 @@ void renderFrameMix() {
 }
 
 void renderFrame() {
+//	GLfloat vVertices[] = { 0.0f, 0.5f, 0.0f, -0.5f, -0.5f, 0.0f, 0.5f, -0.5f,
+//			0.0f };
 	GLfloat vVertices[] = { 0.0f, 0.5f, 0.0f, -0.5f, -0.5f, 0.0f, 0.5f, -0.5f,
-			0.0f };
+				0.0f };
 	// Clear the color buffer
 	glClear(GL_COLOR_BUFFER_BIT);
 	// Use the program object
 	glUseProgram(programObject);
-
+	initColor();
 	// Load the vertex data
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, vVertices);
 	glEnableVertexAttribArray(0);
@@ -255,6 +284,7 @@ void drawCircle() {
 		lineVertices[ii++] = z2;
 	}
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, lineVertices);
+	initColor();
 	glEnableVertexAttribArray(0);
 	glDrawArrays(GL_LINES, 0, totalVertices * 2);
 }
@@ -405,9 +435,9 @@ JNIEXPORT void JNICALL Java_org_gleason_opengles2_opengl_model_Sprite_eglinfo(JN
 {
 	getEGLInfo();
 }
-JNIEXPORT void JNICALL Java_org_gleason_opengles2_opengl_model_Sprite_init(JNIEnv* env, jclass class)
+JNIEXPORT void JNICALL Java_org_gleason_opengles2_opengl_model_Sprite_init(JNIEnv* env, jclass class, jint resize)
 {
-	InitializeOpenGL();
+	InitializeOpenGL(resize);
 }
 JNIEXPORT void JNICALL Java_org_gleason_opengles2_opengl_model_Sprite_resize(JNIEnv* env, jclass class, jint width, jint height)
 {
@@ -462,6 +492,10 @@ JNIEXPORT void JNICALL Java_org_gleason_opengles2_opengl_model_Sprite_setCords(J
 	widthScreen = x;
 	heightScreen = y;
 //	glOrthof(0, x, y, 0, 2.0, -2.0);
+}
+JNIEXPORT void JNICALL Java_org_gleason_opengles2_opengl_model_Sprite_toggleColor(JNIEnv* env, jclass class)
+{
+	toggleColor();
 }
 
 

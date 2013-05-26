@@ -1,13 +1,7 @@
 package org.gleason.opengles2.opengl;
 
-
-import java.nio.FloatBuffer;
-import java.nio.IntBuffer;
-
-
 import org.gleason.opengles2.opengl.model.Sprite;
 import org.gleason.opengles2.opengl.renderer.CircleRenderer;
-import org.gleason.opengles2.opengl.renderer.LineRenderer;
 
 import android.opengl.GLSurfaceView;
 import android.os.Bundle;
@@ -69,18 +63,17 @@ public class OpenGlCircleActivity extends Activity implements View.OnTouchListen
 	
 	@Override
 	public boolean onTouch(View view, MotionEvent event) {
+		if(event.getAction() == MotionEvent.ACTION_DOWN){
+			Sprite.toggleColor();
+		}
+		if(event.getAction() == MotionEvent.ACTION_UP){
+			Sprite.toggleColor();
+		}
 		moveCircle(event.getX(), event.getY());
 		return true;
 	}
 	
 	private void moveCircle(float x, float y){
-//		float moveX = ((x)-(size.x/2))/(size.x/2);
-//		Log.d("Debug", "Y "+ y);
-//		Log.d("Debug", "Height "+ size.y);
-//		float moveY = ((size.y/2)-(y))/(size.y/2);
-//		Log.d("Debug", "MoveY "+ moveY);
-//		Sprite.setMoveX(moveX);
-//		Sprite.setMoveY(moveY);
 		Sprite.setMoveX(x);
 		Sprite.setMoveY(y);
 	}
